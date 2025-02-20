@@ -1,0 +1,3 @@
+REATE CONSTRAINT batch_unique_key IF NOT EXISTS
+for (batch:Batch)
+REQUIRE (batch.batchNumber, batch.plantCode) IS NODE KEY
