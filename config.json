@@ -1,7 +1,7 @@
 {
     "server_uri": "bolt://localhost:7687",
     "admin_user": "neo4j",
-    "admin_pass": "xxxxxxxxx",
+    "admin_pass": "xxxxx",
     "database": "NEO4J",
     "files": [
         {
@@ -21,7 +21,7 @@
         "skip_records": 1,
         "chunk_size": 1000,
         "field_separator": ",",
-        "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.work_order_no IS NOT NULL AND event.plant IS NOT NULL AND event.material_number_input IS NOT NULL AND event.material_number_output IS NOT NULL AND event.batch_number_input <> event.batch_number_output AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output, plantCode: event.manufacturing_site}) MERGE (i:Batch {batchNumber: event.batch_number_input, plantCode: event.plant}) MERGE (mi:Material {materialNumber: event.material_number_input}) MERGE (mo:Material {materialNumber: event.material_number_output}) MERGE (o)-[r:WORK_ORDER]->(i) ON CREATE SET r.workOrderNumber = event.work_order_no MERGE (mi)-[:PRODUCED_AS]->(i) MERGE (mo)-[:PRODUCED_AS]->(o)" 
+        "cql": "with $dict.rows AS rows UNWIND rows AS event with event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.po_number<>'' AND event.plant is not null AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output, plantCode: event.manufacturing_site}) MERGE (i:Batch {batchNumber: event.batch_number_input, plantCode: event.plant}) MERGE (o)-[r:PURCHASE_ORDER{purchaseOrderNumber:event.po_number}]->(i)" 
       }
     ],
     "pre_ingest": [
