@@ -1,7 +1,7 @@
 {
     "server_uri": "bolt://localhost:7687",
     "admin_user": "neo4j",
-    "admin_pass": "G7m$Xp9@",
+    "admin_pass": "xxxxxxxxx",
     "database": "NEO4J",
     "files": [
         {
