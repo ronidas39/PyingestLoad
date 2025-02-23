@@ -1,31 +1,21 @@
 {
     "server_uri": "bolt://localhost:7687",
     "admin_user": "neo4j",
-    "admin_pass": "xxxxx",
+    "admin_pass": "xxxx",
     "database": "NEO4J",
     "files": [
         {
-            "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/child.csv",
+            "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/completedata.csv",
             "type": "csv",
             "compression": "none",
             "skip_records": 1,
             "chunk_size": 1000,
             "field_separator": ",",
-            "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.work_order_no IS NOT NULL AND event.plant IS NOT NULL AND event.material_number_input IS NOT NULL AND event.material_number_output IS NOT NULL AND event.batch_number_input <> event.batch_number_output AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output, plantCode: event.manufacturing_site}) MERGE (i:Batch {batchNumber: event.batch_number_input, plantCode: event.plant}) MERGE (mi:Material {materialNumber: event.material_number_input}) MERGE (mo:Material {materialNumber: event.material_number_output}) MERGE (o)-[r:WORK_ORDER]->(i) ON CREATE SET r.workOrderNumber = event.work_order_no MERGE (mi)-[:PRODUCED_AS]->(i) MERGE (mo)-[:PRODUCED_AS]->(o)"
-          },
-     
-      {
-        "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/child.csv",
-        "type": "csv",
-        "compression": "none",
-        "skip_records": 1,
-        "chunk_size": 1000,
-        "field_separator": ",",
-        "cql": "with $dict.rows AS rows UNWIND rows AS event with event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.po_number<>'' AND event.plant is not null AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output, plantCode: event.manufacturing_site}) MERGE (i:Batch {batchNumber: event.batch_number_input, plantCode: event.plant}) MERGE (o)-[r:PURCHASE_ORDER{purchaseOrderNumber:event.po_number}]->(i)" 
-      }
+            "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.work_order_no IS NOT NULL AND event.material_number_input IS NOT NULL AND event.material_number_output IS NOT NULL AND event.batch_number_input <> event.batch_number_output AND (event.po_number is NULL or event.po_number ='') AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output}) set o.plantCode=event.manufacturing_site MERGE (i:Batch {batchNumber: event.batch_number_input}) set i.plantCode=event.manufacturing_site MERGE (mi:Material {materialNumber: event.material_number_input}) MERGE (mo:Material {materialNumber: event.material_number_output}) MERGE (o)-[r:CONSUMES]->(i) ON CREATE SET r.workOrderNumber = event.work_order_no MERGE (mi)-[:PRODUCED_AS]->(i) MERGE (mo)-[:PRODUCED_AS]->(o)"
+          }
     ],
     "pre_ingest": [
-      "CREATE CONSTRAINT batch_unique_key IF NOT EXISTS for (batch:Batch) REQUIRE (batch.batchNumber, batch.plantCode) IS NODE KEY",
+      "CREATE CONSTRAINT batch_unique_key IF NOT EXISTS for (batch:Batch) REQUIRE (batch.batchNumber) IS NODE KEY",
       "CREATE CONSTRAINT constraint_Material_materialnumber IF NOT EXISTS FOR (p:Material) REQUIRE (p.materialNumber) IS UNIQUE"
     ],
     "post_ingest": [
