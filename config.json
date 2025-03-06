@@ -1,25 +1,55 @@
 {
-    "server_uri": "bolt://localhost:7687",
-    "admin_user": "neo4j",
-    "admin_pass": "xxxx",
-    "database": "NEO4J",
-    "files": [
-        {
-            "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/completedata.csv",
-            "type": "csv",
-            "compression": "none",
-            "skip_records": 1,
-            "chunk_size": 1000,
-            "field_separator": ",",
-            "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.work_order_no IS NOT NULL AND event.material_number_input IS NOT NULL AND event.material_number_output IS NOT NULL AND event.batch_number_input <> event.batch_number_output AND (event.po_number is NULL or event.po_number ='') AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output}) set o.plantCode=event.manufacturing_site MERGE (i:Batch {batchNumber: event.batch_number_input}) set i.plantCode=event.manufacturing_site MERGE (mi:Material {materialNumber: event.material_number_input}) MERGE (mo:Material {materialNumber: event.material_number_output}) MERGE (o)-[r:CONSUMES]->(i) ON CREATE SET r.workOrderNumber = event.work_order_no MERGE (mi)-[:PRODUCED_AS]->(i) MERGE (mo)-[:PRODUCED_AS]->(o)"
-          }
-    ],
-    "pre_ingest": [
-      "CREATE CONSTRAINT batch_unique_key IF NOT EXISTS for (batch:Batch) REQUIRE (batch.batchNumber) IS NODE KEY",
-      "CREATE CONSTRAINT constraint_Material_materialnumber IF NOT EXISTS FOR (p:Material) REQUIRE (p.materialNumber) IS UNIQUE"
-    ],
-    "post_ingest": [
-      "MATCH (n) RETURN count(n)"
-    ]
-  }
-  
+  "server_uri": "bolt://34.201.55.233:7687",
+  "admin_user": "neo4j",
+  "admin_pass": "xxxx",
+  "database": "NEO4J",
+  "files": [
+    {
+      "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/completedata.csv",
+      "type": "csv",
+      "compression": "none",
+      "skip_records": 1,
+      "chunk_size": 1000,
+      "field_separator": ",",
+      "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.batch_number_output IS NOT NULL AND event.batch_number_input IS NOT NULL AND event.manufacturing_site IS NOT NULL AND event.work_order_no IS NOT NULL AND event.work_order_no <>'' AND event.material_number_input IS NOT NULL AND event.material_number_output IS NOT NULL AND event.batch_number_input <> event.batch_number_output AND (event.po_number is NULL or event.po_number ='') AND (event.genealogy_level = '02' OR event.genealogy_level = '03') MERGE (o:Batch {batchNumber: event.batch_number_output}) set o.plantCode=event.manufacturing_site MERGE (i:Batch {batchNumber: event.batch_number_input}) set i.plantCode=event.manufacturing_site MERGE (mi:Material {materialNumber: event.material_number_input}) MERGE (mo:Material {materialNumber: event.material_number_output}) MERGE (o)-[r:CONSUMES]->(i) ON CREATE SET r.workOrderNumber = event.work_order_no MERGE (mi)-[:PRODUCED_AS]->(i) MERGE (mo)-[:PRODUCED_AS]->(o)"
+    },
+    {
+      "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/space.csv",
+      "type": "csv",
+      "compression": "none",
+      "skip_records": 1,
+      "chunk_size": 1000,
+      "field_separator": ",",
+      "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.batch_number IS NOT NULL AND event.sample_id IS NOT NULL MERGE(s:CamlineLot:Space{camlineId:event.sample_id}) MERGE(b:Batch{batchNumber:event.batch_number}) MERGE (b)-[:SAMPLED_BY]->(s)"
+    },
+    {
+      "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/space_details_2.csv",
+      "type": "csv",
+      "compression": "none",
+      "skip_records": 1,
+      "chunk_size": 1000,
+      "field_separator": ",",
+      "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.sample_id IS NOT NULL AND event.rv_seq_num IS NOT NULL MERGE(s:Space:Details{sample_id:event.sample_id}) MERGE(c:CamlineLot:Space{camlineId:event.sample_id}) MERGE(t:Test{testNumber:event.rv_seq_num})MERGE (c)-[:HAS_DETAILS]->(s) MERGE(c)-[:TESTED_BY]->(t)"
+    },
+    {
+      "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/space_details_2.csv",
+      "type": "csv",
+      "compression": "none",
+      "skip_records": 1,
+      "chunk_size": 1000,
+      "field_separator": ",",
+      "cql": "WITH $dict.rows AS rows UNWIND rows AS event WITH event WHERE event.sample_id IS NOT NULL AND event.batch_number IS NOT NULL AND event.serial_number IS NOT NULL MERGE(c:CamlineLot:Space{camlineId:event.sample_id}) MERGE(f:Filter{serialNumber:event.serial_number,batchNumber:event.batch_number}) MERGE(c)-[:SAMPLE_OF]->(f)"
+    }
+  ],
+  "pre_ingest": [
+    "CREATE CONSTRAINT batch_unique_key IF NOT EXISTS for (batch:Batch) REQUIRE (batch.batchNumber) IS NODE KEY",
+    "CREATE CONSTRAINT constraint_Material_materialnumber IF NOT EXISTS FOR (p:Material) REQUIRE (p.materialNumber) IS UNIQUE",
+    "CREATE CONSTRAINT constraint_camlineLot IF NOT EXISTS FOR (p:CamlineLot) REQUIRE (p.camlineId) IS UNIQUE",
+    "CREATE CONSTRAINT constraint_details IF NOT EXISTS FOR (p:Details) REQUIRE (p.sample_id) IS UNIQUE",
+    "CREATE CONSTRAINT constraint_test IF NOT EXISTS FOR (p:Test) REQUIRE (p.testNumber) IS UNIQUE",
+    "CREATE CONSTRAINT filter_unique_key IF NOT EXISTS for (p:Filter) REQUIRE (p.serialNumber,p.batchNumber) IS NODE KEY"
+  ],
+  "post_ingest": [
+    "MATCH (n) RETURN count(n)"
+  ]
+}
