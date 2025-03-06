@@ -5,7 +5,7 @@
   "database": "NEO4J",
   "files": [
     {
-      "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/completedata.csv",
+      "url": "/Users/roni/Documents/CLIENT_WORK/entegris/newdata/batch_hierarchy_complete.csv",
       "type": "csv",
       "compression": "none",
       "skip_records": 1,
